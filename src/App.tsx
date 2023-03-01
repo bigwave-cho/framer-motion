@@ -7,55 +7,30 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
 `;
-
-const Box = styled.div`
+// ## How to use styled-components with framer-motion
+const Box = styled(motion.div)`
   width: 200px;
   height: 200px;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 15px;
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.06);
 `;
 
-//framer 적용방법 : <motion.원하는태그>
 function App() {
   return (
     <Wrapper>
-      <Box />
-      <motion.header></motion.header>
+      <Box
+        //https://www.framer.com/motion/transition/
+        //animate 적용하면 약간 튕기는 듯한 모션이 발생하는데
+        //모든 애니메이션에는 spring이라는 옵션이 default
+        // damping, stifness...
+        transition={{ type: 'spring', delay: 0.5 }}
+        //initial : initial state
+        initial={{ scale: 0 }}
+        animate={{ scale: 1, rotateZ: 360 }}
+      />
     </Wrapper>
   );
 }
 
 export default App;
-
-/*
-CRA ver4일 경우 ECMAscript moduel을 지원하지 않아 framer complier 에러가 발생
-
-
-해결 방법
-CRACO: CRA 설정 덮어씌움.
-
-https://github.com/dilanx/craco
-
-CRACO를 설치, 오버라이드
-
-npm install @craco/craco --save
-
-craco.config.js 파일 생성
-
-module.exports = {
-webpack: {
-configure: {
-module: {
-rules: [
-{
-type: 'javascript/auto',
-test: /\.mjs$/,
-include: /node_modules/,
-},
-],
-},
-},
-},
-}
-*/
