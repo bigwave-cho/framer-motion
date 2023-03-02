@@ -1,22 +1,12 @@
 import styled from 'styled-components';
-import { motion } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useMotionValue } from 'framer-motion';
+import { useEffect } from 'react';
 const Wrapper = styled.div`
   height: 100vh;
   width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
-`;
-
-const BiggerBox = styled.div`
-  width: 600px;
-  height: 600px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-radius: 40px;
-  background-color: rgba(255, 255, 255, 0.3);
 `;
 
 const Box = styled(motion.div)`
@@ -29,37 +19,26 @@ const Box = styled(motion.div)`
   box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1), 0 10px 20px rgba(0, 0, 0, 0.06);
 `;
 
-const boxVariants = {
-  hover: {
-    rotateZ: 90,
-  },
-  click: { borderRadius: '100px' },
-};
-
 function App() {
-  const biggerBoxRef = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  console.log(x); // 움직일 때 콘솔 찍어도 안나옴.
+  // 이유 : motionvalue는 state 상태가 아님. 즉 모션을 실행시킬때마다 리렌더 되지 않음. 굳.
+
+  // 그럼에도 불구하고 아래 방법으로 x 값은 확인 가능
+  useEffect(() => {
+    //x.get() x값 가져오기
+    x.onChange(() => console.log(x.get()));
+  }, [x]);
 
   return (
     <Wrapper>
-      <BiggerBox ref={biggerBoxRef}>
-        <Box
-          variants={boxVariants}
-          // limiting drag direction
-          // drag="x"
-          drag
-          // dragConstraints : limiting droppable region
-          // 1. manually decided
-          // dragConstraints={{ top: -200, bottom: 200, left: -200, right: 200 }}
-          // 2. decided by parent node
-          dragConstraints={biggerBoxRef}
-          // drag 후 처음 위치로 복귀
-          dragSnapToOrigin
-          // dragElastic : 0~1 (0: 영역 밖에서 작용하는 힘 min / 1 : max) 써보면 앎.
-          dragElastic={0.5}
-          whileHover="hover"
-          whileTap="click"
-        />
-      </BiggerBox>
+      <button
+        // x.set(200) x값 200으로
+        onClick={() => x.set(200)}
+      >
+        click me
+      </button>
+      <Box style={{ x: x }} drag="x" dragSnapToOrigin />
     </Wrapper>
   );
 }
