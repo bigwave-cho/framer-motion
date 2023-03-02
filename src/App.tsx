@@ -1,12 +1,14 @@
 import styled from 'styled-components';
-import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useScroll } from 'framer-motion';
 import { useEffect } from 'react';
-const Wrapper = styled.div`
-  height: 100vh;
+
+const Wrapper = styled(motion.div)`
+  height: 500vh;
   width: 100vw;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: linear-gradient(135deg, rgb(238, 0, 153), rgb(221, 0, 238));
 `;
 
 const Box = styled(motion.div)`
@@ -21,22 +23,34 @@ const Box = styled(motion.div)`
 
 function App() {
   const x = useMotionValue(0);
-  const scale = useTransform(x, [-800, 0, 800], [2, 1, 0.1]);
-  /*
-  useTransform 훅을 통해 MotionValues를 연결합니다.
-  useTransform()는 한 값 범위에서 다른 값 범위로 매핑하여 다른 MotionValue의 output을 변환하는 MotionValue를 만듭니다.
-  x(Motion Value)값을 다른 output값으로 변환해준다.
-  ex) x: -800 => 2    x : 800 => 0.1
-  */
+  const rotateZ = useTransform(x, [-800, 800], [-360, 360]);
+  const gradient = useTransform(
+    x,
+    [-800, 0, 800],
+    [
+      'linear-gradient(135deg, rgb(0, 194, 238), rgb(0, 163, 238))',
+      'linear-gradient(135deg, rgb(238, 0, 153), rgb(221, 0, 238))',
+      'linear-gradient(135deg, rgb(0, 238, 95), rgb(36, 238, 0))',
+    ]
+  );
+  //scrollY : px 단위   // progress : 0~1 로 반환
+  const { scrollY, scrollYProgress } = useScroll();
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 5]);
 
+  //확인해보기
   useEffect(() => {
-    // x.onChange(() => console.log(x.get()));
-    scale.onChange(() => console.log(scale.get()));
-  }, [x, scale]);
+    scrollY.onChange(() => {
+      console.log(scrollY.get(), scrollYProgress.get());
+    });
+  }, [scrollY, scrollYProgress]);
 
   return (
-    <Wrapper>
-      <Box style={{ x: x, scale: scale }} drag="x" dragSnapToOrigin />
+    <Wrapper style={{ background: gradient }}>
+      <Box
+        style={{ x: x, rotateZ: rotateZ, scale: scale }}
+        drag="x"
+        dragSnapToOrigin
+      />
     </Wrapper>
   );
 }
