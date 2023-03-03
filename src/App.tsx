@@ -4,10 +4,8 @@ import { useState } from 'react';
 
 //## AnimatePresence
 /*
-AnimatePresence를 사용하면 React 트리에서 컴포넌트가 제거될 때 제거되는 컴포넌트에 애니메이션 효과를 줄 수 있습니다. React에는 다음과 같은 수명 주기 메서드가 없기 때문에 종료 애니메이션을 활성화해야 합니다.
-
-exit
-이 컴포넌트가 트리에서 제거될 때 애니메이션할 대상입니다.
+Slider example
+https://codesandbox.io/s/framer-motion-image-gallery-pqvx3?from-embed=&file=/src/Example.tsx:1616-1623
 */
 
 const Wrapper = styled(motion.div)`
@@ -38,54 +36,73 @@ const Box = styled(motion.div)`
 `;
 
 const box = {
-  invisible: {
-    x: 500,
-    opacity: 0,
-    scale: 0,
+  //custom을 사용하기 위해선 객체->함수로 바꿔
+  entry: (back: boolean) => {
+    return {
+      x: back ? -500 : 500,
+      opacity: 0,
+      scale: 0,
+    };
   },
-  visible: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    transition: {
-      duration: 2,
-    },
+  center: (back: boolean) => {
+    return {
+      x: 0,
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 1,
+      },
+    };
   },
-  exit: {
-    x: -500,
+  exit: (back: boolean) => ({
+    // 삼항조건을 통해 중간에 애니메이션 돌리기 가능
+    x: back ? 500 : -500,
     opacity: 0,
     scale: 0,
     rotateX: 360,
-    transition: { duration: 2 },
-  },
+    transition: { duration: 1 },
+  }),
 };
 
 function App() {
   const [visible, setVisible] = useState(1);
+  const [back, setBack] = useState(false);
+
   const nextPlease = () => {
+    setBack(false);
     setVisible((prev) => (prev === 10 ? 10 : prev + 1));
   };
   const prevPlease = () => {
+    setBack(true);
     setVisible((prev) => (prev === 1 ? 1 : prev - 1));
   };
-
+  console.log(visible);
   return (
     <Wrapper>
-      <AnimatePresence>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(
-          (i) =>
-            i === visible && (
-              <Box
-                variants={box}
-                initial="invisible"
-                animate="visible"
-                exit="exit"
-                key={i}
-              >
-                {i}
-              </Box>
-            )
-        )}
+      <AnimatePresence
+        // mode="wait" 은 애니메이션이 끝날 때 까지 기다리는 옵션
+        //하지만 버튼에 달린 이벤트 핸들러는 그대로 실행되기 때문에
+        //기다리지 않고 클릭해버리면 로직이 꼬여서 다음 애니메이션이 실행이 안됨
+        //따라서 애니메이션 시간만큼 타임아웃 등을 걸어서 button 또한
+        // disabled 될 수 있도록 해도 괜찮을듯.
+        mode="wait"
+        custom={back}
+      >
+        <Box
+          //custom : 각 애니메이션 컴포넌트에 대해 동적 variants를 다르게 적용할 때 사용할 수 있는 커스텀 데이터
+          custom={back}
+          variants={box}
+          initial="entry"
+          animate="center"
+          exit="exit"
+          // !! React에서는 key를 기준으로 element의 사라짐을 판단함
+          // 그래서 key를 남겨두고 visible만 변경해준다면
+          // AnimatePresence는 해당 요소가 사라졌다고 판단하여
+          // exit 애니메이션을 실행함.
+          key={visible}
+        >
+          {visible}
+        </Box>
       </AnimatePresence>
       <button onClick={prevPlease}>prev</button>
       <button onClick={nextPlease}>next</button>
